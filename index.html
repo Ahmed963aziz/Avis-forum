@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Évaluation des Défaillances</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+    }
+    label, select, input, button {
+      display: block;
+      margin: 10px 0;
+      width: 100%;
+    }
+    select, input {
+      padding: 5px;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Évaluation des modes de défaillance</h2>
+
+  <label for="phase">Phase :</label>
+  <select id="phase" onchange="updateTasks()">
+    <option value="">-- Sélectionner une phase --</option>
+  </select>
+
+  <label for="tache">Tâche :</label>
+  <select id="tache">
+    <option value="">-- Sélectionner une tâche --</option>
+  </select>
+
+  <label for="defaillance">Mode de défaillance :</label>
+  <input type="text" id="defaillance" placeholder="Ex. : erreur d’allocation" oninput="afficherNotes()">
+
+  <div id="evaluation" style="display:none;">
+    <label>Gravité :</label>
+    <select id="gravite" onchange="calculRPN()">
+      <option value="">-- Noter de 1 à 10 --</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+      <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+    </select>
+
+    <label>Occurrence :</label>
+    <select id="occurence" onchange="calculRPN()">
+      <option value="">-- Noter de 1 à 10 --</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+      <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+    </select>
+
+    <label>Détectabilité :</label>
+    <select id="detectabilite" onchange="calculRPN()">
+      <option value="">-- Noter de 1 à 10 --</option>
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+      <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+    </select>
+
+    <p><strong>RPN :</strong> <span id="rpn">-</span></p>
+
+    <button onclick="ajouterAvis()">➕ Ajouter un avis</button>
+  </div>
+
+  <h3>📝 Avis enregistrés :</h3>
+  <table id="tableAvis">
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Tâche</th>
+        <th>Défaillance</th>
+        <th>Gravité</th>
+        <th>Occurrence</th>
+        <th>Détectabilité</th>
+        <th>RPN</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const data = {
+      "Service Initiation": [
+        "Update schedule and final resource allocation (project team)",
+        "Project environment setup (incl. management tools)",
+        "Update project space access rights",
+        "Project team notification",
+        "Project summary completion",
+        "Internal kick-off meeting",
+        "Client kick-off meeting planning"
+      ],
+      "Kick-off preparation": [
+        "Review planning (Peer Review)",
+        "Set up additional management tools (if needed)",
+        "Client kick-off meeting + Report"
+      ],
+      "Execution": [
+        "Technical direction",
+        "Technical coordination and execution",
+        "Compliance with the performance",
+        "Seismic product generation",
+        "Report writing",
+        "Validation of client deliverables (interim & final)",
+        "Client progress meeting",
+        "Data management",
+        "Client liaison",
+        "Project management"
+      ],
+      "Project Delivery": [
+        "Delivery of processed data",
+        "Preliminary report submission",
+        "Transmission du rapport final"
+      ],
+      "Decision": [
+        "Final client validation"
+      ],
+      "Closure": [
+        "Client closure meeting",
+        "Project archiving (HPC)",
+        "Document storage"
+      ],
+      "Post-mortem Analysis": [
+        "Collection & analysis of client feedback",
+        "Project team feedback",
+        "Recommendations and improvement actions"
+      ]
+    };
+
+    const phaseSelect = document.getElementById("phase");
+    const tacheSelect = document.getElementById("tache");
+    const tableBody = document.querySelector("#tableAvis tbody");
+
+    Object.keys(data).forEach(phase => {
+      const option = document.createElement("option");
+      option.value = phase;
+      option.textContent = phase;
+      phaseSelect.appendChild(option);
+    });
+
+    function updateTasks() {
+      const selectedPhase = phaseSelect.value;
+      tacheSelect.innerHTML = '<option value="">-- Sélectionner une tâche --</option>';
+      if (selectedPhase && data[selectedPhase]) {
+        data[selectedPhase].forEach(tache => {
+          const option = document.createElement("option");
+          option.value = tache;
+          option.textContent = tache;
+          tacheSelect.appendChild(option);
+        });
+      }
+    }
+
+    function afficherNotes() {
+      const defaillance = document.getElementById('defaillance').value.trim();
+      document.getElementById('evaluation').style.display = defaillance ? 'block' : 'none';
+    }
+
+    function calculRPN() {
+      const g = parseInt(document.getElementById('gravite').value);
+      const o = parseInt(document.getElementById('occurence').value);
+      const d = parseInt(document.getElementById('detectabilite').value);
+      const rpn = (g && o && d) ? g * o * d : "-";
+      document.getElementById('rpn').innerText = rpn;
+    }
+
+    function ajouterAvis() {
+      const phase = phaseSelect.value;
+      const tache = tacheSelect.value;
+      const defaillance = document.getElementById('defaillance').value.trim();
+      const g = document.getElementById('gravite').value;
+      const o = document.getElementById('occurence').value;
+      const d = document.getElementById('detectabilite').value;
+      const rpn = g && o && d ? g * o * d : "-";
+
+      if (!phase || !tache || !defaillance || !g || !o || !d) {
+        alert("Merci de remplir tous les champs avant d’ajouter un avis.");
+        return;
+      }
+
+      const row = tableBody.insertRow();
+      [phase, tache, defaillance, g, o, d, rpn].forEach(text => {
+        const cell = row.insertCell();
+        cell.textContent = text;
+      });
+
+      // Réinitialiser les champs
+      document.getElementById('defaillance').value = '';
+      document.getElementById('gravite').value = '';
+      document.getElementById('occurence').value = '';
+      document.getElementById('detectabilite').value = '';
+      document.getElementById('evaluation').style.display = 'none';
+      document.getElementById('rpn').innerText = '-';
+    }
+  </script>
+
+</body>
+</html>
