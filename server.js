@@ -7,15 +7,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 👉 Sert le fichier HTML depuis le dossier "public"
+// Sert les fichiers HTML/CSS/JS depuis le dossier "public"
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 👉 Connexion à MongoDB
-mongoose.connect('mongodb+srv://Aziz123:Ahmed-Aziz292@cluster.mongodb.net/avisDB')
+// Connexion à MongoDB Atlas
+mongoose.connect('mongodb+srv://Aziz:12345@cluster0.0lampxk.mongodb.net/avisDB?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('✅ MongoDB connecté'))
-  .catch(err => console.error(err));
+  .catch(err => console.error('❌ Erreur de connexion MongoDB :', err.message));
 
-// 👉 Schéma des avis
+// Schéma Mongoose pour les avis
 const AvisSchema = new mongoose.Schema({
   phase: String,
   tache: String,
@@ -28,16 +28,29 @@ const AvisSchema = new mongoose.Schema({
 
 const Avis = mongoose.model('Avis', AvisSchema);
 
-// 👉 Route pour ajouter un avis
+// Route POST pour enregistrer un avis
 app.post('/ajouter-avis', async (req, res) => {
+  console.log("📩 Requête reçue : ", req.body);
+
   try {
-    const avis = new Avis(req.body);
+    const { phase, tache, defaillance, gravite, occurence, detectabilite, rpn } = req.body;
+
+    if (!phase || !tache || !defaillance || !gravite || !occurence || !detectabilite || !rpn) {
+      return res.status(400).json({ message: 'Champs manquants dans la requête' });
+    }
+
+    const avis = new Avis({ phase, tache, defaillance, gravite, occurence, detectabilite, rpn });
     await avis.save();
-    res.status(201).json({ message: 'Avis enregistré' });
+
+    console.log("✅ Avis enregistré !");
+    res.status(201).json({ message: 'Avis enregistré avec succès' });
+
   } catch (err) {
-    res.status(500).json({ message: 'Erreur serveur', error: err });
+    console.error('❌ Erreur lors de l’enregistrement de l’avis :', err.message);
+    res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 });
 
+// Lancer le serveur
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Serveur actif sur http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Serveur en ligne sur http://localhost:${PORT}`));
