@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+require('dotenv').config(); // ← Pour lire les variables d’environnement
 
 const app = express();
 app.use(cors());
@@ -10,8 +11,8 @@ app.use(express.json());
 // Sert les fichiers HTML/CSS/JS depuis le dossier "public"
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connexion à MongoDB Atlas
-mongoose.connect('mongodb+srv://Aziz:12345@cluster0.0lampxk.mongodb.net/avisDB?retryWrites=true&w=majority&appName=Cluster0')
+// Connexion à MongoDB Atlas via variable d'environnement
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB connecté'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err.message));
 
@@ -53,4 +54,4 @@ app.post('/ajouter-avis', async (req, res) => {
 
 // Lancer le serveur
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Serveur en ligne sur http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Serveur en ligne sur le port ${PORT}`));
